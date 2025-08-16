@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Free Online Image Compressor – Bulk, HD & Unlimited</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./image-compressor.css" />
+  </head>
+  <body>
+    <div class="ic-app" id="ic-app">
+      <section class="ic-hero">
+        <h1>Free Online Image Compressor – Bulk, HD & Unlimited</h1>
+        <p>Compress your images without losing quality. Enjoy HD export, bulk upload, and unlimited file sizes – all free, with live preview and quality control.</p>
+      </section>
+
+      <section class="ic-main">
+        <div class="ic-left" id="ic-left">
+          <div class="ic-actions">
+            <input id="ic-file-input" type="file" multiple accept="image/*" hidden />
+            <button class="ic-btn ic-btn-primary" id="ic-add-btn">Add Images</button>
+            <button class="ic-btn ic-btn-ghost" id="ic-delete-all-btn">Delete All</button>
+          </div>
+
+          <div class="ic-list" id="ic-list" aria-live="polite"></div>
+        </div>
+
+        <div class="ic-right" id="ic-right">
+          <div class="ic-toolbar">
+            <div class="ic-maxsize">
+              <label for="ic-max-kb">Max File Size (KB)</label>
+              <input id="ic-max-kb" type="number" min="1" step="1" placeholder="e.g., 500" />
+            </div>
+            <button class="ic-btn ic-btn-primary" id="ic-apply-max">Apply</button>
+          </div>
+
+          <div class="ic-preview" id="ic-preview">
+            <div class="ic-compare" id="ic-compare" style="--ic-split: 50%">
+              <img id="ic-original-img" class="ic-compare-base" alt="Original" />
+              <div class="ic-compare-overlay" id="ic-compare-overlay">
+                <img id="ic-compressed-img" alt="Compressed" />
+              </div>
+              <div class="ic-compare-handle" id="ic-compare-handle" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="Comparison slider"></div>
+            </div>
+          </div>
+
+          <div class="ic-controls">
+            <div class="ic-quality">
+              <label for="ic-quality-range">Quality: <span id="ic-quality-value">80%</span></label>
+              <input id="ic-quality-range" type="range" min="10" max="100" step="1" value="80" />
+            </div>
+            <div class="ic-stats" id="ic-stats">Original: 0 KB | Compressed: 0 KB (0%)</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="ic-modal" id="ic-confirm-modal" aria-hidden="true">
+        <div class="ic-modal-backdrop" data-close="modal"></div>
+        <div class="ic-modal-box" role="dialog" aria-modal="true" aria-labelledby="ic-modal-title">
+          <h3 id="ic-modal-title">Delete all images?</h3>
+          <p>This action cannot be undone.</p>
+          <div class="ic-modal-actions">
+            <button class="ic-btn ic-btn-ghost" id="ic-cancel-delete">Cancel</button>
+            <button class="ic-btn ic-btn-danger" id="ic-confirm-delete">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ic-toast" id="ic-toast" aria-live="polite"></div>
+    </div>
+
+    <script src="./image-compressor.js" defer></script>
+  </body>
+</html>
