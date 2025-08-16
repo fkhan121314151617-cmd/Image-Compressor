@@ -28,6 +28,9 @@
   const modalConfirm = document.getElementById('ic-confirm-delete');
   const toast = document.getElementById('ic-toast');
 
+  const progress = document.getElementById('ic-progress');
+  const progressText = document.getElementById('ic-progress-text');
+
   // State
   const state = {
     images: [], // {id, name, type, originalBlob, originalUrl, width, height, quality, compressedBlob, compressedUrl}
@@ -52,6 +55,19 @@
     toast.textContent = message;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function showProgress(message) {
+    if (!progress) return;
+    progressText.textContent = message || 'Processing…';
+    progress.classList.add('show');
+    progress.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideProgress() {
+    if (!progress) return;
+    progress.classList.remove('show');
+    progress.setAttribute('aria-hidden', 'true');
   }
 
   function revokeUrl(url) {
@@ -298,6 +314,8 @@
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
+    showProgress('Uploading images…');
+
     for (const file of files) {
       if (!file.type.startsWith('image/')) continue;
 
@@ -305,6 +323,8 @@
       const originalUrl = URL.createObjectURL(file);
       const thumbnailUrl = originalUrl; // simple approach
       const originalBlob = file;
+
+      showProgress('Compressing image…');
 
       // Compress initially at default quality
       const compressedBlob = await compressBlob(originalBlob, DEFAULT_QUALITY);
@@ -324,6 +344,8 @@
 
       state.images.push(item);
     }
+
+    hideProgress();
 
     if (!state.activeId && state.images.length) {
       state.activeId = state.images[0].id;
@@ -346,6 +368,7 @@
     qualityValue.textContent = `${Math.round(q * 100)}%`;
     item.quality = q;
 
+    showProgress('Recompressing…');
     // recompress
     const prevUrl = item.compressedUrl;
     const newBlob = await compressBlob(item.originalBlob, q);
@@ -359,6 +382,7 @@
 
     if (prevUrl) setTimeout(() => revokeUrl(prevUrl), 100);
     renderList();
+    hideProgress();
   }, 200);
 
   qualityRange.addEventListener('input', applyQuality);
@@ -372,6 +396,8 @@
       showToast('Enter a valid KB value');
       return;
     }
+
+    showProgress('Compressing to target size…');
 
     const { blob, quality } = await compressToTargetKB(item.originalBlob, kb);
     const prevUrl = item.compressedUrl;
@@ -387,6 +413,7 @@
 
     if (prevUrl) setTimeout(() => revokeUrl(prevUrl), 100);
     renderList();
+    hideProgress();
   });
 
   // Compare slider interactions
