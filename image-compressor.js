@@ -31,6 +31,7 @@
 
   const progress = document.getElementById('ic-progress');
   const progressText = document.getElementById('ic-progress-text');
+  const progressFill = progress ? progress.querySelector('.ic-progress-fill') : null;
 
   // State
   const state = {
@@ -63,12 +64,19 @@
     progressText.textContent = message || 'Processing…';
     progress.classList.add('show');
     progress.setAttribute('aria-hidden', 'false');
+    if (progressFill) {
+      progressFill.classList.remove('run');
+      // Reflow to restart animation
+      void progressFill.offsetWidth;
+      progressFill.classList.add('run');
+    }
   }
 
   function hideProgress() {
     if (!progress) return;
     progress.classList.remove('show');
     progress.setAttribute('aria-hidden', 'true');
+    if (progressFill) progressFill.classList.remove('run');
   }
 
   function revokeUrl(url) {
@@ -476,6 +484,10 @@
     const start = (e) => { isDown = true; setSplitFromEvent(e); };
     const move = (e) => { if (!isDown) return; setSplitFromEvent(e); };
     const end = () => { isDown = false; };
+
+    // Initialize to 50%
+    compare.style.setProperty('--ic-split', '50%');
+    handle.setAttribute('aria-valuenow', '50');
 
     handle.addEventListener('mousedown', start);
     handle.addEventListener('touchstart', start, { passive: true });

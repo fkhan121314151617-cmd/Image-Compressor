@@ -289,11 +289,10 @@
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, var(--ic-primary), var(--ic-secondary));
-  animation: ic-fill 1.2s ease-in-out infinite;
 }
+.ic-progress-fill.run { animation: ic-fill 1.2s ease-out forwards; }
 @keyframes ic-fill {
   0% { width: 0%; }
-  50% { width: 60%; }
   100% { width: 100%; }
 }
 
@@ -320,10 +319,10 @@
 .ic-compare-overlay {
   position: absolute;
   inset: 0;
-  width: var(--ic-split, 50%);
   overflow: hidden;
-  border-right: 2px solid rgba(99, 0, 226, 0.8);
-  transition: width 0.05s linear;
+  /* Show the overlay (compressed) on the RIGHT side of the split */
+  clip-path: polygon(var(--ic-split, 50%) 0%, 100% 0%, 100% 100%, var(--ic-split, 50%) 100%);
+  will-change: clip-path;
 }
 
 .ic-compare-handle {
