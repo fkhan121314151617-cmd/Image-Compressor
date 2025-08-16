@@ -101,62 +101,73 @@
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
     URL.revokeObjectURL(url);
-    return canvas;
+    return { canvas, width: img.naturalWidth, height: img.naturalHeight };
   }
 
-  async function canvasToBlob(canvas, type, quality) {
+  async function compressFromCanvas(canvas, type, quality) {
     return new Promise((resolve) => {
-      canvas.toBlob(
-        (b) => resolve(b),
-        type,
-        quality
-      );
+      canvas.toBlob((b) => resolve(b), type, quality);
     });
   }
 
-  async function compressBlob(originalBlob, quality = DEFAULT_QUALITY) {
-    const canvas = await drawToCanvas(originalBlob);
-    // Prefer WEBP, fallback to JPEG
+  async function compressBlob(originalBlob, quality = DEFAULT_QUALITY, reuse) {
+    const { canvas } = reuse || (await drawToCanvas(originalBlob));
     let type = 'image/webp';
-    let out = await canvasToBlob(canvas, type, Math.max(0.05, Math.min(1, quality)));
+    let out = await compressFromCanvas(canvas, type, Math.max(0.05, Math.min(1, quality)));
     if (!out) {
       type = 'image/jpeg';
-      out = await canvasToBlob(canvas, type, Math.max(0.05, Math.min(1, quality)));
+      out = await compressFromCanvas(canvas, type, Math.max(0.05, Math.min(1, quality)));
     }
-    if (!out) {
-      // Last resort, return original
-      return originalBlob;
-    }
-    return out;
+    return out || originalBlob;
+  }
+
+  function createScaledCanvas(srcCanvas, scale) {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(srcCanvas.width * scale));
+    canvas.height = Math.max(1, Math.round(srcCanvas.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(srcCanvas, 0, 0, srcCanvas.width, srcCanvas.height, 0, 0, canvas.width, canvas.height);
+    return canvas;
   }
 
   async function compressToTargetKB(originalBlob, targetKB) {
     const targetBytes = targetKB * 1024;
-    // If original already below target, compress slightly to WEBP/JPEG but keep size
-    if (originalBlob.size <= targetBytes) {
-      const result = await compressBlob(originalBlob, DEFAULT_QUALITY);
-      return { blob: result, quality: DEFAULT_QUALITY };
-    }
+    const reuse = await drawToCanvas(originalBlob);
 
+    // Fast path: try WEBP at few quality levels via binary search
     let low = 0.05, high = 1.0;
-    let bestBlob = null; let bestQ = low;
+    let best = { blob: null, q: low };
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 8; i++) {
       const mid = (low + high) / 2;
-      const tmp = await compressBlob(originalBlob, mid);
+      const tmp = await compressFromCanvas(reuse.canvas, 'image/webp', mid);
       if (tmp && tmp.size <= targetBytes) {
-        bestBlob = tmp; bestQ = mid; high = mid - 0.02;
+        best = { blob: tmp, q: mid };
+        high = mid - 0.05;
       } else {
-        low = mid + 0.02;
+        low = mid + 0.05;
       }
     }
 
-    if (!bestBlob) {
-      const tmp = await compressBlob(originalBlob, low);
-      bestBlob = tmp; bestQ = low;
+    if (best.blob) return { blob: best.blob, quality: best.q };
+
+    // If still too big at lowest quality, downscale progressively and retry
+    let scale = 0.9;
+    while (scale > 0.3) {
+      const scaled = createScaledCanvas(reuse.canvas, scale);
+      low = 0.05; high = 1.0; best = { blob: null, q: low };
+      for (let i = 0; i < 6; i++) {
+        const mid = (low + high) / 2;
+        const tmp = await compressFromCanvas(scaled, 'image/webp', mid);
+        if (tmp && tmp.size <= targetBytes) { best = { blob: tmp, q: mid }; high = mid - 0.05; } else { low = mid + 0.05; }
+      }
+      if (best.blob) return { blob: best.blob, quality: best.q };
+      scale -= 0.1;
     }
 
-    return { blob: bestBlob, quality: Math.max(0.05, Math.min(1, bestQ)) };
+    // Fallback: return lowest-quality webp
+    const fallback = await compressFromCanvas(reuse.canvas, 'image/webp', 0.05);
+    return { blob: fallback, quality: 0.05 };
   }
 
   function setActive(id) {
@@ -265,6 +276,30 @@
       row.addEventListener('click', () => setActive(item.id));
       listEl.appendChild(row);
     });
+
+    // Append Download All tile at the end
+    const endTile = document.createElement('div');
+    endTile.className = 'ic-list-end';
+    const dlAll = document.createElement('button');
+    dlAll.className = 'ic-btn ic-btn-primary';
+    dlAll.textContent = 'Download All';
+    dlAll.addEventListener('click', () => {
+      const items = state.images.filter((i) => i.compressedBlob);
+      if (!items.length) return;
+      items.forEach((item, idx) => {
+        const url = URL.createObjectURL(item.compressedBlob);
+        const a = document.createElement('a');
+        const ext = item.compressedBlob.type.includes('webp') ? 'webp' : 'jpg';
+        a.href = url;
+        a.download = `${item.name.replace(/\.[^/.]+$/, '')}-compressed-${idx + 1}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+    });
+    endTile.appendChild(dlAll);
+    listEl.appendChild(endTile);
   }
 
   function renderActive() {
@@ -359,22 +394,7 @@
     fileInput.value = '';
   });
 
-  // Download all compressed images (as multiple downloads)
-  downloadAllBtn.addEventListener('click', () => {
-    const items = state.images.filter((i) => i.compressedBlob);
-    if (!items.length) return;
-    items.forEach((item, idx) => {
-      const url = URL.createObjectURL(item.compressedBlob);
-      const a = document.createElement('a');
-      const ext = item.compressedBlob.type.includes('webp') ? 'webp' : 'jpg';
-      a.href = url;
-      a.download = `${item.name.replace(/\.[^/.]+$/, '')}-compressed-${idx + 1}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    });
-  });
+  // Download all compressed images (was top button) — no longer needed here
 
   // Ensure compressed image element is empty by default
   compressedImg.removeAttribute('src');
