@@ -12,6 +12,7 @@
 
   const maxKbInput = document.getElementById('ic-max-kb');
   const applyMaxBtn = document.getElementById('ic-apply-max');
+  const downloadAllBtn = document.getElementById('ic-download-all');
 
   const originalImg = document.getElementById('ic-original-img');
   const compressedImg = document.getElementById('ic-compressed-img');
@@ -248,6 +249,8 @@
       removeBtn.title = 'Remove';
       removeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        const proceed = confirm('Remove this image?');
+        if (!proceed) return;
         removeItem(item.id);
       });
 
@@ -355,6 +358,26 @@
     renderActive();
     fileInput.value = '';
   });
+
+  // Download all compressed images (as multiple downloads)
+  downloadAllBtn.addEventListener('click', () => {
+    const items = state.images.filter((i) => i.compressedBlob);
+    if (!items.length) return;
+    items.forEach((item, idx) => {
+      const url = URL.createObjectURL(item.compressedBlob);
+      const a = document.createElement('a');
+      const ext = item.compressedBlob.type.includes('webp') ? 'webp' : 'jpg';
+      a.href = url;
+      a.download = `${item.name.replace(/\.[^/.]+$/, '')}-compressed-${idx + 1}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  });
+
+  // Ensure compressed image element is empty by default
+  compressedImg.removeAttribute('src');
 
   // Quality control
   function debounce(fn, wait) {

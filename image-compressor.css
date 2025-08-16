@@ -65,6 +65,8 @@
   margin-bottom: 16px;
 }
 
+.ic-btn-block { grid-column: 1 / -1; }
+
 .ic-btn {
   display: inline-flex;
   align-items: center;
@@ -149,6 +151,19 @@
 /* Hide old meta */
 .ic-item-meta, .ic-item-title, .ic-item-sub { display: none !important; }
 
+/* Smaller solid red remove */
+.ic-chip.ic-remove {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  min-width: 28px;
+  border-radius: 8px;
+  background: #e54848;
+  color: #fff;
+  border: 1px solid #e54848;
+}
+.ic-chip.ic-remove:hover { filter: brightness(0.95); }
+
 .ic-chip {
   border: 1px solid var(--ic-border);
   padding: 8px 10px;
@@ -220,6 +235,21 @@
   overflow: hidden;
   position: relative;
 }
+
+.ic-badge {
+  position: absolute;
+  top: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(33, 0, 76, 0.65);
+  border-radius: 999px;
+  z-index: 2;
+  pointer-events: none;
+}
+.ic-badge-left { left: 10px; }
+.ic-badge-right { right: 10px; }
 
 /* Progress overlay */
 .ic-progress {
@@ -401,6 +431,7 @@
     grid-template-columns: 1fr;
     margin-bottom: 14px;
   }
+  .ic-btn-block { grid-column: 1 / 1; }
   .ic-list { grid-template-columns: 1fr; }
   .ic-toolbar {
     flex-direction: column;

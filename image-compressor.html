@@ -20,6 +20,7 @@
             <input id="ic-file-input" type="file" multiple accept="image/*" hidden />
             <button class="ic-btn ic-btn-primary" id="ic-add-btn">Add Images</button>
             <button class="ic-btn ic-btn-danger" id="ic-delete-all-btn">Delete All</button>
+            <button class="ic-btn ic-btn-primary ic-btn-block" id="ic-download-all">Download All</button>
           </div>
 
           <div class="ic-list" id="ic-list" aria-live="polite"></div>
@@ -36,6 +37,8 @@
 
           <div class="ic-preview" id="ic-preview">
             <div class="ic-compare" id="ic-compare" style="--ic-split: 50%">
+              <div class="ic-badge ic-badge-left">Original</div>
+              <div class="ic-badge ic-badge-right">Compressed</div>
               <img id="ic-original-img" class="ic-compare-base" alt="Original" />
               <div class="ic-compare-overlay" id="ic-compare-overlay">
                 <img id="ic-compressed-img" alt="Compressed" />
