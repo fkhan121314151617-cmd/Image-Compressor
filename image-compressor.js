@@ -401,7 +401,8 @@
     item.compressedBlob = newBlob;
     item.compressedUrl = newUrl;
 
-    compressedImg.src = newUrl;
+    // Update preview only after URL is ready
+    requestAnimationFrame(() => { compressedImg.src = newUrl; });
     statsEl.textContent = sizeReductionText(item.originalBlob.size, item.compressedBlob.size);
 
     if (prevUrl) setTimeout(() => revokeUrl(prevUrl), 100);
@@ -430,7 +431,7 @@
     item.compressedUrl = newUrl;
     item.quality = quality;
 
-    compressedImg.src = newUrl;
+    requestAnimationFrame(() => { compressedImg.src = newUrl; });
     qualityRange.value = Math.round(quality * 100);
     qualityValue.textContent = `${Math.round(quality * 100)}%`;
     statsEl.textContent = sizeReductionText(item.originalBlob.size, item.compressedBlob.size);
@@ -449,7 +450,7 @@
       const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
       let x = clientX - rect.left;
       x = Math.max(0, Math.min(rect.width, x));
-      const perc = (x / rect.width) * 100;
+      const perc = Math.max(0, Math.min(100, (x / rect.width) * 100));
       compare.style.setProperty('--ic-split', `${perc}%`);
       handle.setAttribute('aria-valuenow', `${Math.round(perc)}`);
     }

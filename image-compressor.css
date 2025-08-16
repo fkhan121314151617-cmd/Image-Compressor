@@ -302,6 +302,7 @@
   height: 460px;
   background: #f6f2ff;
   user-select: none;
+  overflow: hidden;
 }
 
 /* Inner frame */
@@ -335,11 +336,15 @@
   height: 100%;
   object-fit: contain;
   display: block;
+  image-orientation: from-image;
+  background: #fff;
 }
 
 .ic-compare-base {
   position: absolute;
-  inset: 12px;
+  inset: 0;
+  padding: 12px;
+  box-sizing: border-box;
   z-index: 0;
 }
 
@@ -349,7 +354,7 @@
   padding: 12px;
   box-sizing: border-box;
   overflow: hidden;
-  /* Show the overlay (compressed) on the RIGHT side of the split */
+  /* Reveal the RIGHT side (Compressed) */
   clip-path: polygon(var(--ic-split, 50%) 0%, 100% 0%, 100% 100%, var(--ic-split, 50%) 100%);
   will-change: clip-path;
   z-index: 1;
