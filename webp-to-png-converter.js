@@ -44,6 +44,9 @@
   let converted = [];
   /** @type {Set<File>} */
   const convertedFiles = new Set();
+  /** @type {WeakMap<File, string>} */
+  const fileIdMap = new WeakMap();
+  let nextFileId = 1;
   // Per-image settings removed
 
   // Helpers
@@ -160,6 +163,8 @@
       const url = URL.createObjectURL(file);
       const item = document.createElement('div');
       item.className = 'tsc-item';
+      const fid = fileIdMap.get(file);
+      if (fid) item.setAttribute('data-file-id', fid);
       item.innerHTML = `
         <img class="tsc-thumb" src="${url}" alt="${file.name}" />
         <div class="tsc-filemeta">
@@ -296,6 +301,8 @@
     showUploadLoading();
     // small delay to allow overlay to paint
     await new Promise(r => setTimeout(r, 50));
+    // Assign stable IDs to new files
+    incoming.forEach(f => { if (!fileIdMap.has(f)) fileIdMap.set(f, String(nextFileId++)); });
     selectedFiles = selectedFiles.concat(incoming);
     renderPreviews();
     updateSelectedCount();
@@ -406,11 +413,15 @@
         converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
         convertedFiles.add(file);
         // Mark in preview as converted
-        const items = previewGrid.querySelectorAll('.tsc-item');
-        const match = Array.from(items).find(el => {
-          const nameEl = el.querySelector('.tsc-filename');
-          return nameEl && nameEl.getAttribute('title') === file.name;
-        });
+        const fid = fileIdMap.get(file);
+        let match = fid ? previewGrid.querySelector(`.tsc-item[data-file-id="${fid}"]`) : null;
+        if (!match) {
+          const items = previewGrid.querySelectorAll('.tsc-item');
+          match = Array.from(items).find(el => {
+            const nameEl = el.querySelector('.tsc-filename');
+            return nameEl && nameEl.getAttribute('title') === file.name;
+          });
+        }
         if (match) {
           const btn = match.querySelector('.tsc-convert-one');
           if (btn) {
