@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PNG to WebP Converter</title>
+  <link rel="stylesheet" href="png-to-webp-converter.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-RHxJz2kJwX8/7tY0K5m13Q2m8y/8b1gL3J7GScxp7D4jFr4nVgCahXEtT73sZ2bJ0C7Qy7Xr6PUUQbTRc7W9mw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="png-to-webp-converter.js" defer></script>
+  <style>html{background:#fff}</style>
+</head>
+<body>
+  <section class="tsc-png2webp" data-tool="png-to-webp">
+    <div class="tsc-container">
+      <header class="tsc-header">
+        <h2 class="tsc-title">PNG to WebP Converter – Free & Unlimited</h2>
+        <p class="tsc-subtitle">Convert PNG images to WebP instantly, without limits. Upload unlimited files, get high‑quality WebPs, and download them individually or all at once — 100% free and browser‑based.</p>
+      </header>
+
+      <div class="tsc-card tsc-upload" id="uploadCard">
+        <div class="tsc-dropzone" id="pngDropzone" aria-label="Upload PNG images">
+          <div class="tsc-dropzone-inner">
+            <div class="tsc-drop-icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20 16.5a3.5 3.5 0 00-3.5-3.5h-9A3.5 3.5 0 004 16.5v0A3.5 3.5 0 007.5 20h9A3.5 3.5 0 0020 16.5v0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="tsc-drop-text"><strong>Drag & drop</strong> PNG images here</p>
+            <p class="tsc-drop-or">or</p>
+            <button type="button" class="tsc-btn tsc-btn-primary" id="selectPngBtn">Select Files</button>
+            <input type="file" id="pngFileInput" accept="image/png,.png" multiple hidden />
+          </div>
+        </div>
+        <div class="tsc-loading-overlay" id="uploadLoading" hidden>
+          <div class="tsc-loading-inner">
+            <span class="tsc-spinner" aria-hidden="true"></span>
+            <span class="tsc-loading-text">Loading images...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tsc-panel tsc-collapsible is-collapsed" id="selectedPanel">
+        <div class="tsc-panel-head">
+          <h3 class="tsc-panel-title">Selected Images</h3>
+          <span class="tsc-panel-hint" id="selectedCount">0 selected</span>
+        </div>
+        <div class="tsc-grid tsc-previews" id="previewGrid"></div>
+        <div class="tsc-actions-row is-hidden" id="actionsContainer">
+          <div class="tsc-actions-left">
+            <button type="button" class="tsc-btn tsc-btn-addmore" id="addMoreBtn">Add More</button>
+          </div>
+          <div class="tsc-actions-right">
+            <button type="button" class="tsc-btn tsc-btn-gradient tsc-btn-lg" id="convertBtn" disabled>Convert All</button>
+          </div>
+          <div class="tsc-progress" id="progressSection" hidden>
+            <div class="tsc-progress-bar"><span class="tsc-progress-fill" id="progressBar"></span></div>
+            <div class="tsc-progress-text" id="progressText">Ready</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tsc-panel tsc-collapsible is-collapsed" id="resultsPanel">
+        <div class="tsc-panel-head">
+          <h3 class="tsc-panel-title">Converted WebPs</h3>
+          <div class="tsc-result-actions">
+            <button type="button" class="tsc-btn tsc-btn-secondary" id="downloadZipBtn" disabled>Download All</button>
+            <button type="button" class="tsc-btn tsc-btn-danger" id="clearAllBtn" disabled>Clear All</button>
+          </div>
+        </div>
+        <div class="tsc-panel-note">Note: WebP can be significantly smaller than PNG with similar visual quality. Lossless WebP is supported by most modern browsers.</div>
+        <div class="tsc-grid tsc-results" id="resultsGrid"></div>
+      </div>
+
+      <div class="tsc-modal-overlay" id="tscConfirmModal" hidden>
+        <div class="tsc-modal" role="dialog" aria-modal="true" aria-labelledby="tscModalTitle" aria-describedby="tscModalMessage">
+          <div class="tsc-modal-header">
+            <h4 class="tsc-modal-title" id="tscModalTitle">Confirm action</h4>
+          </div>
+          <div class="tsc-modal-body">
+            <p class="tsc-modal-message" id="tscModalMessage">Are you sure?</p>
+          </div>
+          <div class="tsc-modal-actions">
+            <button type="button" class="tsc-btn tsc-btn-ghost tsc-modal-cancel">Cancel</button>
+            <button type="button" class="tsc-btn tsc-btn-danger tsc-modal-confirm">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tsc-toasts" id="tscToasts" aria-live="polite" aria-atomic="true"></div>
+    </div>
+  </section>
+</body>
+</html>
