@@ -401,6 +401,29 @@
 
   // Conversion logic using canvas
   async function convertFileToPNG(file) {
+    // Prefer ImageBitmap decoding with no color space conversion when supported
+    let width = 0, height = 0;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: false });
+    ctx.imageSmoothingEnabled = false;
+    try {
+      if ('createImageBitmap' in window) {
+        const bitmap = await createImageBitmap(file, { colorSpaceConversion: 'none' }).catch(() => null);
+        if (bitmap) {
+          width = bitmap.width; height = bitmap.height;
+          canvas.width = width; canvas.height = height;
+          ctx.globalCompositeOperation = 'copy';
+          ctx.drawImage(bitmap, 0, 0, width, height);
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          if (!blob) throw new Error('Failed to generate PNG');
+          return blob;
+        }
+      }
+    } catch (_) {
+      // fall through to image element pipeline
+    }
+
+    // Fallback: HTMLImageElement pipeline
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -415,14 +438,11 @@
       img.src = dataUrl;
     });
 
-    const canvas = document.createElement('canvas');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const ctx = canvas.getContext('2d');
-    // Draw using original dimensions and high-quality interpolation
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(image, 0, 0);
+    width = image.width; height = image.height;
+    canvas.width = width; canvas.height = height;
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'copy';
+    ctx.drawImage(image, 0, 0, width, height);
 
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     if (!blob) throw new Error('Failed to generate PNG');
