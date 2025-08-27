@@ -247,7 +247,7 @@
       <img class="tsc-result-img" src="${objectUrl}" alt="${name}" />
       <div class="tsc-result-actions">
         <a class="tsc-btn tsc-btn-secondary" download="${name.replace(/\.webp$/i, '.png').replace(/\s+/g,'_')}" href="${objectUrl}">Download PNG</a>
-        <button type="button" class="tsc-btn tsc-btn-light tsc-copy" data-name="${name}">Copy</button>
+        <button type="button" class="tsc-btn tsc-btn-ghost tsc-copy" data-name="${name}">Copy</button>
         <span class="tsc-filesize">${formatBytes(blob.size)}</span>
       </div>
     `;
