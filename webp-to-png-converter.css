@@ -53,8 +53,11 @@
 .tsc-webp2png .tsc-remove { border: 2px solid #fecaca; background: #fee2e2; color: #b91c1c; cursor: pointer; font-weight: 700; font-size: 16px; line-height: 1; padding: 6px; border-radius: 8px; }
 .tsc-webp2png .tsc-remove:hover { background: #fecaca; }
 /* Add More Images button styling */
-.tsc-webp2png .tsc-btn-addmore { background: #f3f0ff; color: #6300E2; box-shadow: 0 6px 16px rgba(99,0,226,0.12); border: 1px solid #e9ddff; }
-.tsc-webp2png .tsc-btn-addmore:hover { background: #ebe6ff; transform: translateY(-1px); }
+.tsc-webp2png .tsc-btn-addmore { background: linear-gradient(135deg, #6300E2 0%, #8E43F0 100%); color: #ffffff; box-shadow: 0 8px 20px rgba(99,0,226,0.25); border: 1px solid rgba(99,0,226,0.35); position: relative; overflow: hidden; }
+.tsc-webp2png .tsc-btn-addmore:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 14px 34px rgba(99,0,226,0.4); }
+.tsc-webp2png .tsc-btn-addmore:active { transform: translateY(0) scale(0.99); }
+.tsc-webp2png .tsc-btn-addmore:after { content: ""; position: absolute; inset: -20%; background: radial-gradient( circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.25), rgba(255,255,255,0) 40% ); opacity: 0; transition: opacity .2s ease; }
+.tsc-webp2png .tsc-btn-addmore:hover:after { opacity: 1; }
 
 /* Result card */
 .tsc-webp2png .tsc-result { display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid #f1e9ff; border-radius: 12px; background: #ffffff; }
@@ -65,6 +68,9 @@
 /* Individual button loading state */
 .tsc-webp2png .tsc-convert-one.is-loading { position: relative; }
 .tsc-webp2png .tsc-convert-one.is-loading:after { content: ''; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.5); border-top-color: #fff; border-radius: 999px; display: inline-block; margin-left: 8px; animation: tsc-spin .9s linear infinite; vertical-align: middle; }
+/* Settings (cog) button icon sizing */
+.tsc-webp2png .tsc-item .tsc-settings { display: inline-flex; align-items: center; justify-content: center; }
+.tsc-webp2png .tsc-item .tsc-settings svg { width: 14px; height: 14px; }
 
 /* Actions */
 .tsc-webp2png .tsc-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
@@ -110,6 +116,11 @@
 .tsc-webp2png .tsc-modal-body { padding: 18px; color: #374151; }
 .tsc-webp2png .tsc-modal-message { margin: 0; font-size: 14px; }
 .tsc-webp2png .tsc-modal-actions { display: flex; gap: 10px; padding: 16px 18px 20px; justify-content: flex-end; }
+/* Modal simple form styles */
+.tsc-webp2png .tsc-form { display: flex; flex-direction: column; gap: 10px; }
+.tsc-webp2png .tsc-form label { font-size: 12px; color: #6b7280; font-weight: 700; }
+.tsc-webp2png .tsc-form input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
+.tsc-webp2png .tsc-form small { color: #9ca3af; font-size: 11px; }
 
 /* Loading overlay */
 .tsc-webp2png .tsc-loading-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.85); display: none; place-items: center; border-radius: 12px; }

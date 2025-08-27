@@ -50,7 +50,7 @@
             <button type="button" class="tsc-btn tsc-btn-addmore" id="addMoreBtn">Add More Images</button>
           </div>
           <div class="tsc-actions-right">
-            <button type="button" class="tsc-btn tsc-btn-gradient tsc-btn-lg" id="convertBtn" disabled>Convert All to PNG</button>
+            <button type="button" class="tsc-btn tsc-btn-gradient tsc-btn-lg" id="convertBtn" disabled>Convert All</button>
           </div>
           <div class="tsc-progress" id="progressSection" hidden>
             <div class="tsc-progress-bar"><span class="tsc-progress-fill" id="progressBar"></span></div>
@@ -82,6 +82,25 @@
           <div class="tsc-modal-actions">
             <button type="button" class="tsc-btn tsc-btn-ghost tsc-modal-cancel">Cancel</button>
             <button type="button" class="tsc-btn tsc-btn-danger tsc-modal-confirm">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tsc-modal-overlay" id="tscSettingsModal" hidden>
+        <div class="tsc-modal" role="dialog" aria-modal="true" aria-labelledby="tscSettingsTitle">
+          <div class="tsc-modal-header">
+            <h4 class="tsc-modal-title" id="tscSettingsTitle">Image settings</h4>
+          </div>
+          <div class="tsc-modal-body">
+            <div class="tsc-form">
+              <label for="tscSettingName">Output file name</label>
+              <input type="text" id="tscSettingName" class="tsc-setting-name" placeholder="example.png" />
+              <small>Use .png extension. Only affects this image.</small>
+            </div>
+          </div>
+          <div class="tsc-modal-actions">
+            <button type="button" class="tsc-btn tsc-btn-ghost tsc-settings-cancel">Cancel</button>
+            <button type="button" class="tsc-btn tsc-btn-primary tsc-settings-save">Save</button>
           </div>
         </div>
       </div>
