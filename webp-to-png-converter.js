@@ -286,6 +286,23 @@
     downloadZipBtn.disabled = !show;
   }
 
+  async function ensureJSZipLoaded() {
+    if (window.JSZip) return true;
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.async = true;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      return !!window.JSZip;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function clearAll() {
     // Revoke preview object URLs
     const imgs = previewGrid.querySelectorAll('img');
@@ -470,19 +487,37 @@
   // settings modal removed
 
   async function downloadAllAsZip() {
-    if (!window.JSZip) return;
-    const zip = new JSZip();
-    const folder = zip.folder('converted_pngs');
-    converted.forEach(item => folder.file(item.name, item.blob));
-    const content = await zip.generateAsync({ type: 'blob' });
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(content);
-    a.href = url;
-    a.download = 'webp-to-png.zip';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    if (converted.length < 2) {
+      toast('Add at least 2 converted images to download all', 'error');
+      return;
+    }
+    const ok = await ensureJSZipLoaded();
+    if (!ok || !window.JSZip) {
+      toast('Download failed: JSZip could not load', 'error');
+      return;
+    }
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder('converted_pngs');
+      converted.forEach(item => {
+        if (item && item.blob && item.name) {
+          folder.file(item.name, item.blob, { binary: true });
+        }
+      });
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(content);
+      a.href = url;
+      a.download = 'webp-to-png.zip';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Zip creation failed', err);
+      toast('Failed to create ZIP file', 'error');
+    }
   }
 
   // Button handlers
