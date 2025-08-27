@@ -35,7 +35,6 @@
   const progressText = wrapper.querySelector('#progressText');
   const uploadCard = wrapper.querySelector('#uploadCard');
   const toasts = wrapper.querySelector('#tscToasts');
-  const toastsTopRight = wrapper.querySelector('#tscToastsTopRight');
   
 
   // State
@@ -126,20 +125,7 @@
     setTimeout(() => { el.remove(); }, 2800);
   }
 
-  function toastTopRightSummary({ addedFiles, rejectedFiles }) {
-    if (!toastsTopRight) return;
-    const totalAdded = addedFiles.length;
-    const totalRejected = rejectedFiles.length;
-    const el = document.createElement('div');
-    el.className = 'tsc-toast tsc-toast-summary';
-    const listAdded = totalAdded ? `<div><strong>${totalAdded}</strong> image${totalAdded>1?'s':''} uploaded</div><div>${addedFiles.map(f=>f.name).slice(0,4).join(', ')}${addedFiles.length>4?`, +${addedFiles.length-4} more`:''}</div>` : '';
-    const listRejected = totalRejected ? `<div style="color:#b91c1c"><strong>${totalRejected}</strong> invalid image format</div><div style="color:#6b7280">${rejectedFiles.map(f=>f.name).slice(0,4).join(', ')}${rejectedFiles.length>4?`, +${rejectedFiles.length-4} more`:''}</div>` : '';
-    el.innerHTML = `${listAdded}${listAdded&&listRejected?'<hr style="border:none;border-top:1px solid #f3f4f6;margin:8px 0"/>':''}${listRejected}`;
-    toastsTopRight.appendChild(el);
-    setTimeout(() => { el.style.animation = 'tsc-toast-out .2s ease forwards'; }, 3500);
-    setTimeout(() => { el.remove(); }, 3800);
-  }
-
+  
   // Modal utilities
   function openConfirmModal({ title, message, confirmText = 'Confirm', cancelText = 'Cancel' }) {
     if (!modalOverlay) return Promise.resolve(window.confirm(message));
@@ -309,8 +295,7 @@
     const arr = Array.from(files);
     const incoming = arr.filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
     const rejected = arr.filter(f => !incoming.includes(f));
-    // Show one summary toast on top-right
-    toastTopRightSummary({ addedFiles: incoming, rejectedFiles: rejected });
+    if (rejected.length > 0) toast('Error: Invalid File Type. Only WebP images are supported!', 'error');
     if (incoming.length === 0) return;
     showUploadLoading();
     // small delay to allow overlay to paint
