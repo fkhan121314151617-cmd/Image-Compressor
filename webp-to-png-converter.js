@@ -56,7 +56,8 @@
 
   function updateSelectedCount() {
     selectedCountEl.textContent = `${selectedFiles.length} selected`;
-    convertBtn.disabled = selectedFiles.length === 0;
+    const pendingCount = selectedFiles.filter(f => !convertedFiles.has(f)).length;
+    convertBtn.disabled = pendingCount === 0;
   }
 
   function openSelectedPanel() {
@@ -214,6 +215,7 @@
           openResultsPanel();
           convertOneBtn.textContent = 'Converted';
           toast(`Image "${file.name}" converted`, 'success');
+          updateSelectedCount();
         } catch (err) {
           console.error('Conversion failed for', file.name, err);
           convertOneBtn.disabled = false;
@@ -430,6 +432,7 @@
 
     downloadZipBtn.disabled = converted.length === 0;
     clearAllBtn.disabled = selectedFiles.length === 0 && converted.length === 0;
+    updateSelectedCount();
   }
 
   // settings modal removed
