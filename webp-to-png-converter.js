@@ -28,12 +28,7 @@
   const modalCancel = modalOverlay ? modalOverlay.querySelector('.tsc-modal-cancel') : null;
   const modalConfirm = modalOverlay ? modalOverlay.querySelector('.tsc-modal-confirm') : null;
 
-  // Settings modal
-  const settingsOverlay = wrapper.querySelector('#tscSettingsModal');
-  const settingsTitle = settingsOverlay ? settingsOverlay.querySelector('#tscSettingsTitle') : null;
-  const settingsInput = settingsOverlay ? settingsOverlay.querySelector('.tsc-setting-name') : null;
-  const settingsCancel = settingsOverlay ? settingsOverlay.querySelector('.tsc-settings-cancel') : null;
-  const settingsSave = settingsOverlay ? settingsOverlay.querySelector('.tsc-settings-save') : null;
+  // Settings modal removed
 
   const progressSection = wrapper.querySelector('#progressSection');
   const progressBar = wrapper.querySelector('#progressBar');
@@ -47,8 +42,7 @@
   let selectedFiles = [];
   /** @type {{name:string, blob:Blob, url:string}[]} */
   let converted = [];
-  /** @type {Map<File, {outputName?: string}>} */
-  const perImageSettings = new Map();
+  // Per-image settings removed
 
   // Helpers
   function formatBytes(bytes) {
@@ -174,10 +168,6 @@
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5v14m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Convert To PNG</span>
           </button>
-          <button type="button" class="tsc-btn tsc-btn-ghost tsc-btn-sm tsc-settings" title="Image settings">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M10.325 4.317a1 1 0 01.965-.317l.66.132a1 1 0 00.99-.39l.396-.528a1 1 0 011.62 0l.396.528a1 1 0 00.99.39l.66-.132a1 1 0 011.192.99v.792a1 1 0 00.436.82l.528.352a1 1 0 010 1.64l-.528.352a1 1 0 00-.436.82v.792a1 1 0 01-1.192.99l-.66-.132a1 1 0 00-.99.39l-.396.528a1 1 0 01-1.62 0l-.396-.528a1 1 0 00-.99-.39l-.66.132a1 1 0 01-1.192-.99v-.792a1 1 0 00-.436-.82l-.528-.352a1 1 0 010-1.64l.528-.352a1 1 0 00.436-.82v-.792a1 1 0 01.227-.673z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.2"/></svg>
-          </button>
           <button type="button" class="tsc-remove" aria-label="Remove">✕</button>
         </div>
       `;
@@ -209,8 +199,7 @@
         convertOneBtn.classList.add('is-loading');
         try {
           const pngBlob = await convertFileToPNG(file);
-          const custom = perImageSettings.get(file);
-          const pngName = (custom && custom.outputName) ? custom.outputName : `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
+          const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
           const objectUrl = appendResultsCard(pngName, pngBlob);
           converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
           downloadZipBtn.disabled = converted.length === 0;
@@ -227,15 +216,7 @@
         }
       });
 
-      // Open settings modal for this item
-      const settingsBtn = item.querySelector('.tsc-settings');
-      if (settingsBtn && settingsOverlay) {
-        settingsBtn.addEventListener('click', () => {
-          const current = perImageSettings.get(file);
-          settingsInput.value = current && current.outputName ? current.outputName : `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
-          openSettingsModal(file);
-        });
-      }
+      // settings removed
 
       previewGrid.appendChild(item);
     });
@@ -294,7 +275,13 @@
 
   // File handling
   async function acceptFiles(files) {
-    const incoming = Array.from(files).filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
+    const arr = Array.from(files);
+    const incoming = arr.filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
+    const rejected = arr.filter(f => !incoming.includes(f));
+    if (rejected.length > 0) {
+      const noun = rejected.length === 1 ? 'file is' : 'files are';
+      toast(`${rejected.length} ${noun} not WebP and were skipped`, 'error');
+    }
     if (incoming.length === 0) return;
     showUploadLoading();
     // small delay to allow overlay to paint
@@ -404,8 +391,7 @@
     for (const file of selectedFiles) {
       try {
         const pngBlob = await convertFileToPNG(file);
-        const custom = perImageSettings.get(file);
-        const pngName = (custom && custom.outputName) ? custom.outputName : `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
+        const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
         const objectUrl = appendResultsCard(pngName, pngBlob);
         converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
         // Mark in preview as converted
@@ -439,39 +425,7 @@
     clearAllBtn.disabled = selectedFiles.length === 0 && converted.length === 0;
   }
 
-  // Settings modal behavior
-  function openSettingsModal(forFile) {
-    if (!settingsOverlay) return;
-    settingsOverlay.hidden = false;
-    settingsOverlay.classList.add('is-visible');
-
-    function onOverlay(e) { if (e.target === settingsOverlay) close(); }
-    function onKey(e) { if (e.key === 'Escape') close(); }
-    function close() {
-      settingsOverlay.classList.remove('is-visible');
-      settingsOverlay.hidden = true;
-      settingsOverlay.removeEventListener('click', onOverlay);
-      document.removeEventListener('keydown', onKey);
-      settingsCancel && settingsCancel.removeEventListener('click', onCancel);
-      settingsSave && settingsSave.removeEventListener('click', onSave);
-    }
-    function onCancel() { close(); }
-    function onSave() {
-      const value = (settingsInput.value || '').trim();
-      if (!/\.png$/i.test(value)) {
-        toast('Please use a .png filename', 'error');
-        return;
-      }
-      perImageSettings.set(forFile, { outputName: value });
-      close();
-      toast('Settings saved for this image', 'success');
-    }
-
-    settingsOverlay.addEventListener('click', onOverlay);
-    document.addEventListener('keydown', onKey);
-    settingsCancel && settingsCancel.addEventListener('click', onCancel);
-    settingsSave && settingsSave.addEventListener('click', onSave);
-  }
+  // settings modal removed
 
   async function downloadAllAsZip() {
     if (!window.JSZip) return;
