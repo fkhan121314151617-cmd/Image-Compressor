@@ -47,7 +47,18 @@
         <div class="tsc-grid tsc-previews" id="previewGrid"></div>
         <div class="tsc-actions-row is-hidden" id="actionsContainer">
           <div class="tsc-actions-left">
-            <button type="button" class="tsc-btn tsc-btn-addmore" id="addMoreBtn">Add More Images</button>
+            <div class="tsc-method">
+              <label for="addMethodSelect" class="sr-only">Add method</label>
+              <select id="addMethodSelect" class="tsc-select" aria-label="Add method">
+                <option value="upload" selected>By Upload</option>
+                <option value="url">By URL</option>
+              </select>
+            </div>
+            <div class="tsc-url-row is-hidden" id="urlInputRow">
+              <input type="url" id="addUrlInput" class="tsc-input" placeholder="https://example.com/image.webp" aria-label="Image URL" />
+              <button type="button" class="tsc-btn tsc-btn-primary tsc-btn-sm" id="addUrlBtn">Add</button>
+            </div>
+            <button type="button" class="tsc-btn tsc-btn-addmore" id="addMoreBtn">Add More</button>
           </div>
           <div class="tsc-actions-right">
             <button type="button" class="tsc-btn tsc-btn-gradient tsc-btn-lg" id="convertBtn" disabled>Convert All</button>
