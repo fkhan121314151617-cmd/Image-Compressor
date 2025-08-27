@@ -321,6 +321,30 @@
       }
     }
 
+    // Compress all images at a given quality and refresh card statuses
+    async function compressAllImages(quality) {
+      if (!images || images.length === 0) return;
+      showProcessing('Compressing all images...');
+      try {
+        for (const item of images) {
+          await ensureCompressed(item, quality);
+        }
+        // Re-render to ensure all cards reflect latest statuses and sizes
+        renderList();
+        // Preserve selection highlight
+        if (selectedId && imageListEl) {
+          const selectedCard = imageListEl.querySelector(`[data-id="${selectedId}"]`);
+          if (selectedCard) selectedCard.classList.add('selected');
+        }
+        toast('All images compressed');
+      } catch (err) {
+        console.error('Compress all error:', err);
+        toast('Failed to compress all images');
+      } finally {
+        hideProcessing();
+      }
+    }
+
     function syncQualityInputs(val) { 
       const v = Math.max(1, Math.min(100, parseInt(val || '50', 10))); 
       if (qualityRange) qualityRange.value = String(v); 
