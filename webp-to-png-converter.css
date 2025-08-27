@@ -47,7 +47,7 @@
 .tsc-webp2png .tsc-filename { font-size: 14px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tsc-webp2png .tsc-filesize { font-size: 12px; color: #6b7280; }
 .tsc-webp2png .tsc-item-actions { display: flex; align-items: center; gap: 8px; justify-content: center !important; width: auto; flex-basis: auto; margin-left: 0; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-.tsc-webp2png .tsc-item .tsc-remove { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 2; }
+.tsc-webp2png .tsc-item .tsc-remove { position: absolute; right: 8px; bottom: 8px; top: auto; transform: none; z-index: 2; }
 .tsc-webp2png .tsc-item .tsc-convert-one { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .tsc-webp2png .tsc-item .tsc-convert-one svg { width: 14px; height: 14px; }
 .tsc-webp2png .tsc-remove { border: 2px solid #fecaca; background: #fee2e2; color: #b91c1c; cursor: pointer; font-weight: 700; font-size: 16px; line-height: 1; padding: 6px; border-radius: 8px; }
