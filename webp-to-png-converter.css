@@ -41,36 +41,44 @@
 .tsc-webp2png .tsc-previews { display: flex; flex-direction: column; gap: 12px; }
 
 /* Preview card */
-.tsc-webp2png .tsc-item { display: flex; gap: 12px; padding: 10px; border: 1px solid #f1e9ff; border-radius: 12px; background: #fcfbff; align-items: center; position: relative; }
+.tsc-webp2png .tsc-item { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; padding: 10px; border: 1px solid #f1e9ff; border-radius: 12px; background: #fcfbff; align-items: center; position: relative; }
 .tsc-webp2png .tsc-thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f3f4f6; box-shadow: inset 0 0 0 1px #eee; }
-.tsc-webp2png .tsc-filemeta { flex: 1; min-width: 0; }
+.tsc-webp2png .tsc-filemeta { display: none; }
 .tsc-webp2png .tsc-filename { font-size: 14px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tsc-webp2png .tsc-filesize { font-size: 12px; color: #6b7280; }
-.tsc-webp2png .tsc-item-actions { display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; align-self: center; }
-.tsc-webp2png .tsc-item .tsc-remove { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+.tsc-webp2png .tsc-item-actions { display: flex; align-items: center; gap: 8px; justify-content: center; }
+.tsc-webp2png .tsc-item .tsc-remove { position: static; justify-self: end; align-self: center; z-index: 1; }
 .tsc-webp2png .tsc-item .tsc-convert-one { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .tsc-webp2png .tsc-item .tsc-convert-one svg { width: 14px; height: 14px; }
 .tsc-webp2png .tsc-remove { border: 2px solid #fecaca; background: #fee2e2; color: #b91c1c; cursor: pointer; font-weight: 700; font-size: 16px; line-height: 1; padding: 6px; border-radius: 8px; }
 .tsc-webp2png .tsc-remove:hover { background: #fecaca; }
 /* Add More Images button styling */
-.tsc-webp2png .tsc-btn-addmore { background: #f3f0ff; color: #6300E2; box-shadow: 0 6px 16px rgba(99,0,226,0.12); border: 1px solid #e9ddff; }
-.tsc-webp2png .tsc-btn-addmore:hover { background: #ebe6ff; transform: translateY(-1px); }
+.tsc-webp2png .tsc-btn-addmore { background: linear-gradient(135deg, #6300E2 0%, #8E43F0 100%); color: #ffffff; box-shadow: 0 8px 20px rgba(99,0,226,0.25); border: 1px solid rgba(99,0,226,0.35); position: relative; overflow: hidden; }
+.tsc-webp2png .tsc-btn-addmore:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 14px 34px rgba(99,0,226,0.4); }
+.tsc-webp2png .tsc-btn-addmore:active { transform: translateY(0) scale(0.99); }
+.tsc-webp2png .tsc-btn-addmore:after { content: ""; position: absolute; inset: -20%; background: radial-gradient( circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.25), rgba(255,255,255,0) 40% ); opacity: 0; transition: opacity .2s ease; }
+.tsc-webp2png .tsc-btn-addmore:hover:after { opacity: 1; }
 
 /* Result card */
 .tsc-webp2png .tsc-result { display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid #f1e9ff; border-radius: 12px; background: #ffffff; }
 .tsc-webp2png .tsc-result-img { width: 100%; border-radius: 10px; background: #f3f4f6; object-fit: cover; height: 180px; }
 .tsc-webp2png .tsc-result-actions { display: flex; align-items: center; gap: 8px; }
 .tsc-webp2png .tsc-result-actions a { text-decoration: none; }
+/* Light button for Copy */
+.tsc-webp2png .tsc-btn-light { background: #ffffff; color: #111827; border: 1px solid #e5e7eb; box-shadow: 0 0 0 rgba(0,0,0,0); }
+.tsc-webp2png .tsc-btn-light:hover { background: #f9fafb; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
 
 /* Individual button loading state */
 .tsc-webp2png .tsc-convert-one.is-loading { position: relative; }
 .tsc-webp2png .tsc-convert-one.is-loading:after { content: ''; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.5); border-top-color: #fff; border-radius: 999px; display: inline-block; margin-left: 8px; animation: tsc-spin .9s linear infinite; vertical-align: middle; }
+/* Settings (cog) button icon sizing */
+ 
 
 /* Actions */
 .tsc-webp2png .tsc-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
 
 /* Buttons */
-.tsc-webp2png .tsc-btn { appearance: none; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease; }
+.tsc-webp2png .tsc-btn { appearance: none; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease; text-transform: none !important; letter-spacing: normal !important; line-height: 1.2; }
 .tsc-webp2png .tsc-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .tsc-webp2png .tsc-btn-sm { padding: 8px 12px; border-radius: 8px; font-size: 12px; }
 
@@ -88,6 +96,12 @@
 .tsc-webp2png .tsc-btn-gradient { color: #fff; background: linear-gradient(135deg, #6300E2 0%, #8E43F0 100%); box-shadow: 0 8px 20px rgba(99,0,226,0.35); }
 .tsc-webp2png .tsc-btn-gradient:hover { transform: scale(1.015); box-shadow: 0 14px 34px rgba(99,0,226,0.45); }
 .tsc-webp2png .tsc-btn-lg { padding: 14px 22px; border-radius: 12px; font-size: 16px; }
+
+/* Guard against theme overrides making text vertical or uppercase */
+.tsc-webp2png .tsc-filemeta,
+.tsc-webp2png .tsc-filename,
+.tsc-webp2png .tsc-filesize { writing-mode: horizontal-tb !important; text-orientation: mixed !important; text-transform: none !important; letter-spacing: normal !important; }
+.tsc-webp2png .tsc-item .tsc-convert-one svg { display: inline-block; }
 
 /* Progress */
 .tsc-webp2png .tsc-progress { display: flex; align-items: center; gap: 10px; min-width: 260px; }
@@ -110,6 +124,8 @@
 .tsc-webp2png .tsc-modal-body { padding: 18px; color: #374151; }
 .tsc-webp2png .tsc-modal-message { margin: 0; font-size: 14px; }
 .tsc-webp2png .tsc-modal-actions { display: flex; gap: 10px; padding: 16px 18px 20px; justify-content: flex-end; }
+ 
+
 
 /* Loading overlay */
 .tsc-webp2png .tsc-loading-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.85); display: none; place-items: center; border-radius: 12px; }
@@ -125,3 +141,4 @@
 .tsc-webp2png .tsc-toast.tsc-toast-error { border-left-color: #EF4444; }
 @keyframes tsc-toast-in { to { opacity: 1; transform: translateY(0); } }
 @keyframes tsc-toast-out { to { opacity: 0; transform: translateY(6px); } }
+ 

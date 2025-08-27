@@ -28,17 +28,26 @@
   const modalCancel = modalOverlay ? modalOverlay.querySelector('.tsc-modal-cancel') : null;
   const modalConfirm = modalOverlay ? modalOverlay.querySelector('.tsc-modal-confirm') : null;
 
+  // Settings modal removed
+
   const progressSection = wrapper.querySelector('#progressSection');
   const progressBar = wrapper.querySelector('#progressBar');
   const progressText = wrapper.querySelector('#progressText');
   const uploadCard = wrapper.querySelector('#uploadCard');
   const toasts = wrapper.querySelector('#tscToasts');
+  
 
   // State
   /** @type {File[]} */
   let selectedFiles = [];
   /** @type {{name:string, blob:Blob, url:string}[]} */
   let converted = [];
+  /** @type {Set<File>} */
+  const convertedFiles = new Set();
+  /** @type {WeakMap<File, string>} */
+  const fileIdMap = new WeakMap();
+  let nextFileId = 1;
+  // Per-image settings removed
 
   // Helpers
   function formatBytes(bytes) {
@@ -50,7 +59,8 @@
 
   function updateSelectedCount() {
     selectedCountEl.textContent = `${selectedFiles.length} selected`;
-    convertBtn.disabled = selectedFiles.length === 0;
+    const pendingCount = selectedFiles.filter(f => !convertedFiles.has(f)).length;
+    convertBtn.disabled = pendingCount === 0;
   }
 
   function openSelectedPanel() {
@@ -115,6 +125,7 @@
     setTimeout(() => { el.remove(); }, 2800);
   }
 
+  
   // Modal utilities
   function openConfirmModal({ title, message, confirmText = 'Confirm', cancelText = 'Cancel' }) {
     if (!modalOverlay) return Promise.resolve(window.confirm(message));
@@ -153,6 +164,8 @@
       const url = URL.createObjectURL(file);
       const item = document.createElement('div');
       item.className = 'tsc-item';
+      const fid = fileIdMap.get(file);
+      if (fid) item.setAttribute('data-file-id', fid);
       item.innerHTML = `
         <img class="tsc-thumb" src="${url}" alt="${file.name}" />
         <div class="tsc-filemeta">
@@ -164,8 +177,8 @@
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5v14m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span>Convert To PNG</span>
           </button>
-          <button type="button" class="tsc-remove" aria-label="Remove">✕</button>
         </div>
+        <button type="button" class="tsc-remove" aria-label="Remove">✕</button>
       `;
 
       // Remove specific file with confirm
@@ -188,6 +201,11 @@
 
       // Convert a single file
       const convertOneBtn = item.querySelector('.tsc-convert-one');
+      // Reflect converted state if already converted
+      if (convertedFiles.has(file)) {
+        convertOneBtn.disabled = true;
+        convertOneBtn.textContent = 'Converted';
+      }
       convertOneBtn.addEventListener('click', async () => {
         const originalText = convertOneBtn.textContent;
         convertOneBtn.disabled = true;
@@ -195,14 +213,16 @@
         convertOneBtn.classList.add('is-loading');
         try {
           const pngBlob = await convertFileToPNG(file);
-          const nameBase = file.name.replace(/\.[^/.]+$/i, '');
-          const pngName = `${nameBase}.png`;
+          const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
           const objectUrl = appendResultsCard(pngName, pngBlob);
           converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
+          convertedFiles.add(file);
           downloadZipBtn.disabled = converted.length === 0;
           openResultsPanel();
           convertOneBtn.textContent = 'Converted';
           toast(`Image "${file.name}" converted`, 'success');
+          updateSelectedCount();
+          updateDownloadAllVisibility();
         } catch (err) {
           console.error('Conversion failed for', file.name, err);
           convertOneBtn.disabled = false;
@@ -212,6 +232,8 @@
           convertOneBtn.classList.remove('is-loading');
         }
       });
+
+      // settings removed
 
       previewGrid.appendChild(item);
     });
@@ -225,9 +247,22 @@
       <img class="tsc-result-img" src="${objectUrl}" alt="${name}" />
       <div class="tsc-result-actions">
         <a class="tsc-btn tsc-btn-secondary" download="${name.replace(/\.webp$/i, '.png').replace(/\s+/g,'_')}" href="${objectUrl}">Download PNG</a>
+        <button type="button" class="tsc-btn tsc-btn-ghost tsc-copy" data-name="${name}">Copy</button>
         <span class="tsc-filesize">${formatBytes(blob.size)}</span>
       </div>
     `;
+    const copyBtn = card.querySelector('.tsc-copy');
+    if (copyBtn && navigator.clipboard && window.ClipboardItem) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          toast(`Copied ${name} to clipboard`, 'success');
+        } catch (err) {
+          console.error('Clipboard copy failed', err);
+          toast('Failed to copy image to clipboard', 'error');
+        }
+      });
+    }
     resultsGrid.appendChild(card);
     return objectUrl;
   }
@@ -244,6 +279,30 @@
     progressText.textContent = `${current}/${total} (${pct}%)`;
   }
 
+  function updateDownloadAllVisibility() {
+    if (!downloadZipBtn) return;
+    const show = converted.length > 1;
+    downloadZipBtn.style.display = show ? '' : 'none';
+    downloadZipBtn.disabled = !show;
+  }
+
+  async function ensureJSZipLoaded() {
+    if (window.JSZip) return true;
+    try {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.async = true;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      return !!window.JSZip;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function clearAll() {
     // Revoke preview object URLs
     const imgs = previewGrid.querySelectorAll('img');
@@ -255,11 +314,12 @@
 
     selectedFiles = [];
     converted = [];
+    convertedFiles.clear();
     previewGrid.innerHTML = '';
     resultsGrid.innerHTML = '';
     updateSelectedCount();
     convertBtn.disabled = true;
-    downloadZipBtn.disabled = true;
+    updateDownloadAllVisibility();
     clearAllBtn.disabled = true;
     resetProgress();
     closeSelectedPanel();
@@ -270,11 +330,16 @@
 
   // File handling
   async function acceptFiles(files) {
-    const incoming = Array.from(files).filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
+    const arr = Array.from(files);
+    const incoming = arr.filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
+    const rejected = arr.filter(f => !incoming.includes(f));
+    if (rejected.length > 0) toast('Error: Invalid File Type. Only WebP images are supported!', 'error');
     if (incoming.length === 0) return;
     showUploadLoading();
     // small delay to allow overlay to paint
     await new Promise(r => setTimeout(r, 50));
+    // Assign stable IDs to new files
+    incoming.forEach(f => { if (!fileIdMap.has(f)) fileIdMap.set(f, String(nextFileId++)); });
     selectedFiles = selectedFiles.concat(incoming);
     renderPreviews();
     updateSelectedCount();
@@ -319,14 +384,46 @@
   });
   selectBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
   const addMoreBtnEl = wrapper.querySelector('#addMoreBtn');
-  if (addMoreBtnEl) addMoreBtnEl.addEventListener('click', () => fileInput.click());
+  if (addMoreBtnEl) {
+    addMoreBtnEl.addEventListener('click', () => fileInput.click());
+    // cursor-follow highlight for hover animation
+    addMoreBtnEl.addEventListener('pointermove', (e) => {
+      const rect = addMoreBtnEl.getBoundingClientRect();
+      addMoreBtnEl.style.setProperty('--x', (e.clientX - rect.left) + 'px');
+      addMoreBtnEl.style.setProperty('--y', (e.clientY - rect.top) + 'px');
+    });
+  }
   fileInput.addEventListener('change', async e => {
     await acceptFiles(e.target.files || []);
     fileInput.value = '';
   });
+  
 
   // Conversion logic using canvas
   async function convertFileToPNG(file) {
+    // Prefer ImageBitmap decoding with no color space conversion when supported
+    let width = 0, height = 0;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: false });
+    ctx.imageSmoothingEnabled = false;
+    try {
+      if ('createImageBitmap' in window) {
+        const bitmap = await createImageBitmap(file, { colorSpaceConversion: 'none' }).catch(() => null);
+        if (bitmap) {
+          width = bitmap.width; height = bitmap.height;
+          canvas.width = width; canvas.height = height;
+          ctx.globalCompositeOperation = 'copy';
+          ctx.drawImage(bitmap, 0, 0, width, height);
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          if (!blob) throw new Error('Failed to generate PNG');
+          return blob;
+        }
+      }
+    } catch (_) {
+      // fall through to image element pipeline
+    }
+
+    // Fallback: HTMLImageElement pipeline
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -341,14 +438,11 @@
       img.src = dataUrl;
     });
 
-    const canvas = document.createElement('canvas');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const ctx = canvas.getContext('2d');
-    // Draw using original dimensions and high-quality interpolation
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(image, 0, 0);
+    width = image.width; height = image.height;
+    canvas.width = width; canvas.height = height;
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'copy';
+    ctx.drawImage(image, 0, 0, width, height);
 
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     if (!blob) throw new Error('Failed to generate PNG');
@@ -357,56 +451,93 @@
 
   async function handleConvertAll() {
     if (selectedFiles.length === 0) return;
+    // Filter to only files not already converted
+    const toConvert = selectedFiles.filter(f => !convertedFiles.has(f));
+    if (toConvert.length === 0) {
+      toast('All selected images are already converted', 'success');
+      return;
+    }
     progressSection.hidden = false;
-    setProgress(0, selectedFiles.length);
+    setProgress(0, toConvert.length);
     openResultsPanel();
 
-    // Clean previous results
-    const prevImgs = resultsGrid.querySelectorAll('img');
-    prevImgs.forEach(img => URL.revokeObjectURL(img.src));
-    resultsGrid.innerHTML = '';
-    converted = [];
-
     let done = 0;
-    for (const file of selectedFiles) {
+    for (const file of toConvert) {
       try {
         const pngBlob = await convertFileToPNG(file);
-        const nameBase = file.name.replace(/\.[^/.]+$/i, '');
-        const pngName = `${nameBase}.png`;
+        const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
         const objectUrl = appendResultsCard(pngName, pngBlob);
         converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
+        convertedFiles.add(file);
+        // Mark in preview as converted
+        const fid = fileIdMap.get(file);
+        let match = fid ? previewGrid.querySelector(`.tsc-item[data-file-id="${fid}"]`) : null;
+        if (!match) {
+          const items = previewGrid.querySelectorAll('.tsc-item');
+          match = Array.from(items).find(el => {
+            const nameEl = el.querySelector('.tsc-filename');
+            return nameEl && nameEl.getAttribute('title') === file.name;
+          });
+        }
+        if (match) {
+          const btn = match.querySelector('.tsc-convert-one');
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Converted';
+          }
+        }
       } catch (err) {
         console.error('Conversion failed for', file.name, err);
       } finally {
         done += 1;
-        setProgress(done, selectedFiles.length);
+        setProgress(done, toConvert.length);
       }
     }
 
     // Single consolidated notification after all are converted
-    if (selectedFiles.length > 0) {
-      const noun = selectedFiles.length === 1 ? 'image' : 'images';
-      toast(`All ${selectedFiles.length} ${noun} converted`, 'success');
-    }
+    const noun = toConvert.length === 1 ? 'image' : 'images';
+    toast(`All ${toConvert.length} ${noun} converted`, 'success');
 
     downloadZipBtn.disabled = converted.length === 0;
+    updateDownloadAllVisibility();
     clearAllBtn.disabled = selectedFiles.length === 0 && converted.length === 0;
+    updateSelectedCount();
   }
 
+  // settings modal removed
+
   async function downloadAllAsZip() {
-    if (!window.JSZip) return;
-    const zip = new JSZip();
-    const folder = zip.folder('converted_pngs');
-    converted.forEach(item => folder.file(item.name, item.blob));
-    const content = await zip.generateAsync({ type: 'blob' });
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(content);
-    a.href = url;
-    a.download = 'webp-to-png.zip';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    if (converted.length < 2) {
+      toast('Add at least 2 converted images to download all', 'error');
+      return;
+    }
+    const ok = await ensureJSZipLoaded();
+    if (!ok || !window.JSZip) {
+      toast('Download failed: JSZip could not load', 'error');
+      return;
+    }
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder('converted_pngs');
+      converted.forEach(item => {
+        if (item && item.blob && item.name) {
+          folder.file(item.name, item.blob, { binary: true });
+        }
+      });
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(content);
+      a.href = url;
+      a.download = 'webp-to-png.zip';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Zip creation failed', err);
+      toast('Failed to create ZIP file', 'error');
+    }
   }
 
   // Button handlers
@@ -433,4 +564,5 @@
   updateSelectedCount();
   resetProgress();
   updateActionsVisibility();
+  updateDownloadAllVisibility();
 })();
