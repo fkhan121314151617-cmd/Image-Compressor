@@ -175,7 +175,7 @@
         <div class="tsc-item-actions">
           <button type="button" class="tsc-btn tsc-btn-primary tsc-btn-sm tsc-convert-one">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5v14m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Convert To PNG</span>
+            <span>Convert To WebP</span>
           </button>
         </div>
         <button type="button" class="tsc-remove" aria-label="Remove">✕</button>
@@ -212,10 +212,10 @@
         convertOneBtn.textContent = 'Converting...';
         convertOneBtn.classList.add('is-loading');
         try {
-          const pngBlob = await convertFileToPNG(file);
-          const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
-          const objectUrl = appendResultsCard(pngName, pngBlob);
-          converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
+          const webpBlob = await convertFileToWebP(file);
+          const webpName = `${file.name.replace(/\.[^/.]+$/i, '')}.webp`;
+          const objectUrl = appendResultsCard(webpName, webpBlob);
+          converted.push({ name: webpName, blob: webpBlob, url: objectUrl });
           convertedFiles.add(file);
           downloadZipBtn.disabled = converted.length === 0;
           openResultsPanel();
@@ -246,7 +246,7 @@
     card.innerHTML = `
       <img class="tsc-result-img" src="${objectUrl}" alt="${name}" />
       <div class="tsc-result-actions">
-        <a class="tsc-btn tsc-btn-secondary" download="${name.replace(/\.webp$/i, '.png').replace(/\s+/g,'_')}" href="${objectUrl}">Download PNG</a>
+        <a class="tsc-btn tsc-btn-secondary" download="${name.replace(/\s+/g,'_')}" href="${objectUrl}">Download WebP</a>
         <button type="button" class="tsc-btn tsc-btn-ghost tsc-copy" data-name="${name}">Copy</button>
         <span class="tsc-filesize">${formatBytes(blob.size)}</span>
       </div>
@@ -255,7 +255,7 @@
     if (copyBtn && navigator.clipboard && window.ClipboardItem) {
       copyBtn.addEventListener('click', async () => {
         try {
-          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          await navigator.clipboard.write([new ClipboardItem({ 'image/webp': blob })]);
           toast(`Copied ${name} to clipboard`, 'success');
         } catch (err) {
           console.error('Clipboard copy failed', err);
@@ -331,9 +331,9 @@
   // File handling
   async function acceptFiles(files) {
     const arr = Array.from(files);
-    const incoming = arr.filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
+    const incoming = arr.filter(f => /\.png$/i.test(f.name) || f.type === 'image/png');
     const rejected = arr.filter(f => !incoming.includes(f));
-    if (rejected.length > 0) toast('Error: Invalid File Type. Only WebP images are supported!', 'error');
+    if (rejected.length > 0) toast('Error: Invalid File Type. Only PNG images are supported!', 'error');
     if (incoming.length === 0) return;
     showUploadLoading();
     // small delay to allow overlay to paint
@@ -400,7 +400,7 @@
   
 
   // Conversion logic using canvas
-  async function convertFileToPNG(file) {
+  async function convertFileToWebP(file) {
     // Prefer ImageBitmap decoding with no color space conversion when supported
     let width = 0, height = 0;
     const canvas = document.createElement('canvas');
@@ -414,8 +414,8 @@
           canvas.width = width; canvas.height = height;
           ctx.globalCompositeOperation = 'copy';
           ctx.drawImage(bitmap, 0, 0, width, height);
-          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-          if (!blob) throw new Error('Failed to generate PNG');
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.92));
+          if (!blob) throw new Error('Failed to generate WebP');
           return blob;
         }
       }
@@ -444,8 +444,8 @@
     ctx.globalCompositeOperation = 'copy';
     ctx.drawImage(image, 0, 0, width, height);
 
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) throw new Error('Failed to generate PNG');
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.92));
+    if (!blob) throw new Error('Failed to generate WebP');
     return blob;
   }
 
@@ -464,10 +464,10 @@
     let done = 0;
     for (const file of toConvert) {
       try {
-        const pngBlob = await convertFileToPNG(file);
-        const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
-        const objectUrl = appendResultsCard(pngName, pngBlob);
-        converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
+        const webpBlob = await convertFileToWebP(file);
+        const webpName = `${file.name.replace(/\.[^/.]+$/i, '')}.webp`;
+        const objectUrl = appendResultsCard(webpName, webpBlob);
+        converted.push({ name: webpName, blob: webpBlob, url: objectUrl });
         convertedFiles.add(file);
         // Mark in preview as converted
         const fid = fileIdMap.get(file);
@@ -518,7 +518,7 @@
     }
     try {
       const zip = new JSZip();
-      const folder = zip.folder('converted_pngs');
+      const folder = zip.folder('converted_webps');
       converted.forEach(item => {
         if (item && item.blob && item.name) {
           folder.file(item.name, item.blob, { binary: true });
@@ -528,7 +528,7 @@
       const a = document.createElement('a');
       const url = URL.createObjectURL(content);
       a.href = url;
-      a.download = 'webp-to-png.zip';
+      a.download = 'png-to-webp.zip';
       a.rel = 'noopener';
       document.body.appendChild(a);
       a.click();
