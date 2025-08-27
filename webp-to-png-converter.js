@@ -222,6 +222,7 @@
           convertOneBtn.textContent = 'Converted';
           toast(`Image "${file.name}" converted`, 'success');
           updateSelectedCount();
+          updateDownloadAllVisibility();
         } catch (err) {
           console.error('Conversion failed for', file.name, err);
           convertOneBtn.disabled = false;
@@ -265,6 +266,13 @@
     progressText.textContent = `${current}/${total} (${pct}%)`;
   }
 
+  function updateDownloadAllVisibility() {
+    if (!downloadZipBtn) return;
+    const show = converted.length > 1;
+    downloadZipBtn.style.display = show ? '' : 'none';
+    downloadZipBtn.disabled = !show;
+  }
+
   function clearAll() {
     // Revoke preview object URLs
     const imgs = previewGrid.querySelectorAll('img');
@@ -281,7 +289,7 @@
     resultsGrid.innerHTML = '';
     updateSelectedCount();
     convertBtn.disabled = true;
-    downloadZipBtn.disabled = true;
+    updateDownloadAllVisibility();
     clearAllBtn.disabled = true;
     resetProgress();
     closeSelectedPanel();
@@ -441,6 +449,7 @@
     toast(`All ${toConvert.length} ${noun} converted`, 'success');
 
     downloadZipBtn.disabled = converted.length === 0;
+    updateDownloadAllVisibility();
     clearAllBtn.disabled = selectedFiles.length === 0 && converted.length === 0;
     updateSelectedCount();
   }
@@ -487,4 +496,5 @@
   updateSelectedCount();
   resetProgress();
   updateActionsVisibility();
+  updateDownloadAllVisibility();
 })();
