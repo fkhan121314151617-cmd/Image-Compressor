@@ -1,0 +1,156 @@
+<!-- Perfect WordPress-Compatible Image Compressor - Use in Elementor Pro HTML Widget -->
+<!-- This version maintains EXACTLY the same structure, design, and functionality as our original files -->
+<div class="wp-intro wp-container">
+  <h1>Free Online Image Compressor – Bulk, HD & Unlimited</h1>
+  <p class="wp-subtitle">Compress your images without losing quality. Enjoy HD export, bulk upload, and unlimited file sizes – all free, with live preview and quality control.</p>
+
+
+</div>
+
+<main class="wp-container wp-main-grid">
+  <!-- LEFT: Upload & List -->
+  <section class="wp-left-panel">
+    <div class="wp-controls wp-icon-bar">
+      <button id="wp-icon-add" class="wp-icon-btn wp-primary" type="button" title="Add Images" aria-label="Add Images">
+        Add
+      </button>
+      <input id="wp-file-input" type="file" accept="image/*" multiple hidden />
+      <div class="wp-filter-group">
+        <button id="wp-icon-filter" class="wp-icon-btn wp-outline" type="button" title="Filter" aria-haspopup="menu" aria-expanded="false" aria-controls="wp-filter-menu" aria-label="Filter" style="display:none;">
+          Filter
+        </button>
+        <div id="wp-filter-menu" class="wp-filter-menu" role="menu">
+          <div class="wp-menu-item" data-sort="az">A-Z</div>
+          <div class="wp-menu-item" data-sort="za">Z-A</div>
+          <div class="wp-menu-item" data-sort="big">Biggest First</div>
+          <div class="wp-menu-item" data-sort="small">Smallest First</div>
+        </div>
+      </div>
+      <span id="wp-upload-count" class="wp-upload-count" aria-live="polite" style="display:none;">Images: 0</span>
+      <button id="wp-compress-all" class="wp-btn wp-primary wp-small" type="button" title="Compress All" aria-label="Compress All" disabled style="display:none;">
+        Compress All
+      </button>
+    </div>
+
+    <div id="wp-empty-state" class="wp-empty-state">Image list is empty. Kindly add images.</div>
+    <div id="wp-image-list" class="wp-image-list" aria-live="polite"></div>
+
+    <!-- Sticky bottom actions -->
+    <div class="wp-bottom-actions">
+      <button id="wp-bottom-download-all" class="wp-btn wp-secondary wp-small" type="button" title="Download All" aria-label="Download All" disabled style="display:none;">
+        Download All
+      </button>
+      <button id="wp-reset-tool" class="wp-btn wp-danger wp-small" type="button" title="Reset" aria-label="Reset tool">
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <!-- RIGHT: Preview & Compression Controls -->
+  <section class="wp-right-panel">
+    <div class="wp-top-controls">
+      <div class="wp-max-inline">
+        <div class="wp-field">
+          <label for="wp-max-size">Max File Size (KB)</label>
+          <input id="wp-max-size" type="number" min="1" step="1" placeholder="e.g., 300" />
+        </div>
+        <button id="wp-apply-max" class="wp-btn wp-secondary" type="button">Apply</button>
+      </div>
+    </div>
+
+    <div class="wp-preview-area">
+      <div class="wp-preview-compare">
+        <div class="wp-compare-viewport" id="wp-compare-viewport" style="display:none; --split:50%">
+          <img id="wp-base-img" alt="Original preview" loading="eager" decoding="async" draggable="false" />
+          <div class="wp-overlay" id="wp-overlay">
+            <img id="wp-overlay-img" alt="Compressed preview" loading="eager" decoding="async" draggable="false" />
+          </div>
+          <div class="wp-divider" id="wp-drag-divider" title="Drag to compare">
+            <div class="wp-handle"></div>
+          </div>
+          <div class="wp-processing" id="wp-processing">
+            <div class="wp-spinner"></div>
+            <span id="wp-processing-text">Processing...</span>
+          </div>
+        </div>
+
+        <div id="wp-upload-frame" class="wp-upload-frame" role="button" tabindex="0">
+          <span>Click or drag & drop here to add images</span>
+        </div>
+
+        <div class="wp-meta-row">
+          <div class="wp-meta" id="wp-original-meta">—</div>
+          <div class="wp-meta" id="wp-compressed-meta">—</div>
+        </div>
+      </div>
+
+      <div class="wp-quality-controls">
+        <label for="wp-quality-range">Quality: <span id="wp-quality-percentage">50%</span></label>
+        <input id="wp-quality-range" type="range" min="1" max="100" value="50" />
+        <input id="wp-quality-value" class="wp-quality-value" type="number" min="1" max="100" value="50" />
+      </div>
+
+      <div class="wp-stats" id="wp-stats">—</div>
+    </div>
+  </section>
+</main>
+
+<!-- Compress All Modal -->
+<dialog id="wp-compress-all-modal" class="wp-modal">
+  <div class="wp-modal-content">
+    <h3>Compress All Images</h3>
+    <p>Select the compression quality for all images:</p>
+    
+    <div class="wp-quality-selection">
+      <label for="wp-compress-quality-range">Quality: <span id="wp-compress-quality-percentage">50%</span></label>
+      <input id="wp-compress-quality-range" type="range" min="1" max="100" value="50" />
+      <input id="wp-compress-quality-value" class="wp-quality-value" type="number" min="1" max="100" value="50" />
+    </div>
+    
+    <div class="wp-modal-actions">
+      <button id="wp-cancel-compress" class="wp-btn wp-outline" type="button">Cancel</button>
+      <button id="wp-confirm-compress" class="wp-btn wp-primary" type="button">Compress All</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Confirm Modal -->
+<dialog id="wp-confirm-modal" class="wp-modal">
+  <div class="wp-modal-content">
+    <h3>Delete all images?</h3>
+    <p>This action will remove all uploaded images.</p>
+    <div class="wp-modal-actions">
+      <button class="wp-btn wp-ghost" id="wp-cancel-delete" type="button">Cancel</button>
+      <button class="wp-btn wp-danger" id="wp-confirm-delete" type="button">Delete</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Reload Confirmation Modal -->
+<dialog id="wp-reload-modal" class="wp-modal">
+  <div class="wp-modal-content">
+    <h3>Are You Sure You Want to Reload the Page?</h3>
+    <p>This may remove all images and reset all settings.</p>
+    <div class="wp-modal-actions">
+      <button class="wp-btn wp-ghost" id="wp-cancel-reload" type="button">Cancel</button>
+      <button class="wp-btn wp-danger" id="wp-confirm-reload" type="button">Reload</button>
+    </div>
+  </div>
+</dialog>
+
+<template id="wp-image-card-template">
+  <div class="wp-image-card" data-id="">
+    <button class="wp-remove" title="Remove" aria-label="Remove">
+      ✕
+    </button>
+    <img class="wp-thumb" alt="thumbnail" />
+    <div class="wp-image-actions">
+      <button class="wp-image-action-btn wp-copy-btn" data-action="copy" type="button">
+        Copy
+      </button>
+      <button class="wp-image-action-btn wp-download-btn" data-action="download" type="button">
+        Download
+      </button>
+    </div>
+  </div>
+</template>
