@@ -64,6 +64,9 @@
 .tsc-webp2png .tsc-result-img { width: 100%; border-radius: 10px; background: #f3f4f6; object-fit: cover; height: 180px; }
 .tsc-webp2png .tsc-result-actions { display: flex; align-items: center; gap: 8px; }
 .tsc-webp2png .tsc-result-actions a { text-decoration: none; }
+/* Light button for Copy */
+.tsc-webp2png .tsc-btn-light { background: #ffffff; color: #111827; border: 1px solid #e5e7eb; box-shadow: 0 0 0 rgba(0,0,0,0); }
+.tsc-webp2png .tsc-btn-light:hover { background: #f9fafb; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
 
 /* Individual button loading state */
 .tsc-webp2png .tsc-convert-one.is-loading { position: relative; }

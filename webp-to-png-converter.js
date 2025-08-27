@@ -247,9 +247,22 @@
       <img class="tsc-result-img" src="${objectUrl}" alt="${name}" />
       <div class="tsc-result-actions">
         <a class="tsc-btn tsc-btn-secondary" download="${name.replace(/\.webp$/i, '.png').replace(/\s+/g,'_')}" href="${objectUrl}">Download PNG</a>
+        <button type="button" class="tsc-btn tsc-btn-light tsc-copy" data-name="${name}">Copy</button>
         <span class="tsc-filesize">${formatBytes(blob.size)}</span>
       </div>
     `;
+    const copyBtn = card.querySelector('.tsc-copy');
+    if (copyBtn && navigator.clipboard && window.ClipboardItem) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          toast(`Copied ${name} to clipboard`, 'success');
+        } catch (err) {
+          console.error('Clipboard copy failed', err);
+          toast('Failed to copy image to clipboard', 'error');
+        }
+      });
+    }
     resultsGrid.appendChild(card);
     return objectUrl;
   }
