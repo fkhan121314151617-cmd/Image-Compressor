@@ -40,10 +40,7 @@
   const progressText = wrapper.querySelector('#progressText');
   const uploadCard = wrapper.querySelector('#uploadCard');
   const toasts = wrapper.querySelector('#tscToasts');
-  const addMethodSelect = wrapper.querySelector('#addMethodSelect');
-  const urlInputRow = wrapper.querySelector('#urlInputRow');
-  const addUrlInput = wrapper.querySelector('#addUrlInput');
-  const addUrlBtn = wrapper.querySelector('#addUrlBtn');
+  
 
   // State
   /** @type {File[]} */
@@ -342,20 +339,12 @@
 
   dropzone.addEventListener('click', (e) => {
     if (e.target && e.target.closest('#selectFilesBtn')) return; // prevent double-open
-    if (!addMethodSelect || addMethodSelect.value === 'upload') {
-      fileInput.click();
-    }
+    fileInput.click();
   });
   selectBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
   const addMoreBtnEl = wrapper.querySelector('#addMoreBtn');
   if (addMoreBtnEl) {
-    addMoreBtnEl.addEventListener('click', () => {
-      if (!addMethodSelect || addMethodSelect.value === 'upload') {
-        fileInput.click();
-      } else {
-        addUrlInput && addUrlInput.focus();
-      }
-    });
+    addMoreBtnEl.addEventListener('click', () => fileInput.click());
     // cursor-follow highlight for hover animation
     addMoreBtnEl.addEventListener('pointermove', (e) => {
       const rect = addMoreBtnEl.getBoundingClientRect();
@@ -367,41 +356,7 @@
     await acceptFiles(e.target.files || []);
     fileInput.value = '';
   });
-
-  // Add by URL support
-  async function acceptUrl(url) {
-    try {
-      const u = (url || '').trim();
-      if (!u) { toast('Please enter an image URL', 'error'); return; }
-      if (!/\.webp($|\?)/i.test(u)) { toast('URL must point to a .webp image', 'error'); return; }
-      const res = await fetch(u, { mode: 'cors' });
-      if (!res.ok) throw new Error('Network error');
-      const contentType = res.headers.get('content-type') || '';
-      if (!/image\/webp/i.test(contentType)) { toast('URL is not a WebP image', 'error'); return; }
-      const blob = await res.blob();
-      const nameGuess = u.split('/').pop().split('?')[0] || 'image.webp';
-      const file = new File([blob], nameGuess, { type: 'image/webp' });
-      await acceptFiles([file]);
-      addUrlInput && (addUrlInput.value = '');
-    } catch (err) {
-      console.error('Add by URL failed', err);
-      toast('Failed to fetch image from URL', 'error');
-    }
-  }
-  if (addUrlBtn) addUrlBtn.addEventListener('click', () => acceptUrl(addUrlInput && addUrlInput.value));
-  if (addUrlInput) addUrlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); acceptUrl(addUrlInput.value); } });
-
-  // Method switching
-  if (addMethodSelect) {
-    addMethodSelect.addEventListener('change', () => {
-      const useUrl = addMethodSelect.value === 'url';
-      if (useUrl) {
-        urlInputRow && urlInputRow.classList.remove('is-hidden');
-      } else {
-        urlInputRow && urlInputRow.classList.add('is-hidden');
-      }
-    });
-  }
+  
 
   // Conversion logic using canvas
   async function convertFileToPNG(file) {

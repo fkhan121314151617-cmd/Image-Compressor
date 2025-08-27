@@ -122,11 +122,6 @@
 .tsc-webp2png .tsc-form input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
 .tsc-webp2png .tsc-form small { color: #9ca3af; font-size: 11px; }
 
-/* Method dropdown + URL input row */
-.tsc-webp2png .tsc-method { display: flex; align-items: center; }
-.tsc-webp2png .tsc-select { appearance: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px; font-weight: 700; color: #111827; }
-.tsc-webp2png .tsc-url-row { display: flex; align-items: center; gap: 8px; }
-.tsc-webp2png .tsc-input { width: 320px; max-width: 60vw; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; }
 
 /* Loading overlay */
 .tsc-webp2png .tsc-loading-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.85); display: none; place-items: center; border-radius: 12px; }
