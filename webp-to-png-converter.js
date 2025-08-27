@@ -42,6 +42,8 @@
   let selectedFiles = [];
   /** @type {{name:string, blob:Blob, url:string}[]} */
   let converted = [];
+  /** @type {Set<File>} */
+  const convertedFiles = new Set();
   // Per-image settings removed
 
   // Helpers
@@ -192,6 +194,11 @@
 
       // Convert a single file
       const convertOneBtn = item.querySelector('.tsc-convert-one');
+      // Reflect converted state if already converted
+      if (convertedFiles.has(file)) {
+        convertOneBtn.disabled = true;
+        convertOneBtn.textContent = 'Converted';
+      }
       convertOneBtn.addEventListener('click', async () => {
         const originalText = convertOneBtn.textContent;
         convertOneBtn.disabled = true;
@@ -202,6 +209,7 @@
           const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
           const objectUrl = appendResultsCard(pngName, pngBlob);
           converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
+          convertedFiles.add(file);
           downloadZipBtn.disabled = converted.length === 0;
           openResultsPanel();
           convertOneBtn.textContent = 'Converted';
@@ -260,6 +268,7 @@
 
     selectedFiles = [];
     converted = [];
+    convertedFiles.clear();
     previewGrid.innerHTML = '';
     resultsGrid.innerHTML = '';
     updateSelectedCount();
@@ -279,8 +288,7 @@
     const incoming = arr.filter(f => /\.webp$/i.test(f.name) || f.type === 'image/webp');
     const rejected = arr.filter(f => !incoming.includes(f));
     if (rejected.length > 0) {
-      const noun = rejected.length === 1 ? 'file is' : 'files are';
-      toast(`${rejected.length} ${noun} not WebP and were skipped`, 'error');
+      toast('Error: Invalid File Type. Only WebP images are supported!', 'error');
     }
     if (incoming.length === 0) return;
     showUploadLoading();
@@ -377,23 +385,24 @@
 
   async function handleConvertAll() {
     if (selectedFiles.length === 0) return;
+    // Filter to only files not already converted
+    const toConvert = selectedFiles.filter(f => !convertedFiles.has(f));
+    if (toConvert.length === 0) {
+      toast('All selected images are already converted', 'success');
+      return;
+    }
     progressSection.hidden = false;
-    setProgress(0, selectedFiles.length);
+    setProgress(0, toConvert.length);
     openResultsPanel();
 
-    // Clean previous results
-    const prevImgs = resultsGrid.querySelectorAll('img');
-    prevImgs.forEach(img => URL.revokeObjectURL(img.src));
-    resultsGrid.innerHTML = '';
-    converted = [];
-
     let done = 0;
-    for (const file of selectedFiles) {
+    for (const file of toConvert) {
       try {
         const pngBlob = await convertFileToPNG(file);
         const pngName = `${file.name.replace(/\.[^/.]+$/i, '')}.png`;
         const objectUrl = appendResultsCard(pngName, pngBlob);
         converted.push({ name: pngName, blob: pngBlob, url: objectUrl });
+        convertedFiles.add(file);
         // Mark in preview as converted
         const items = previewGrid.querySelectorAll('.tsc-item');
         const match = Array.from(items).find(el => {
@@ -411,15 +420,13 @@
         console.error('Conversion failed for', file.name, err);
       } finally {
         done += 1;
-        setProgress(done, selectedFiles.length);
+        setProgress(done, toConvert.length);
       }
     }
 
     // Single consolidated notification after all are converted
-    if (selectedFiles.length > 0) {
-      const noun = selectedFiles.length === 1 ? 'image' : 'images';
-      toast(`All ${selectedFiles.length} ${noun} converted`, 'success');
-    }
+    const noun = toConvert.length === 1 ? 'image' : 'images';
+    toast(`All ${toConvert.length} ${noun} converted`, 'success');
 
     downloadZipBtn.disabled = converted.length === 0;
     clearAllBtn.disabled = selectedFiles.length === 0 && converted.length === 0;
