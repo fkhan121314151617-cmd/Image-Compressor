@@ -132,3 +132,6 @@
 .tsc-webp2png .tsc-toast.tsc-toast-error { border-left-color: #EF4444; }
 @keyframes tsc-toast-in { to { opacity: 1; transform: translateY(0); } }
 @keyframes tsc-toast-out { to { opacity: 0; transform: translateY(6px); } }
+/* top-right toasts */
+.tsc-webp2png .tsc-toasts-topright { left: auto; right: 24px; bottom: auto; top: 24px; transform: none; align-items: flex-end; }
+.tsc-webp2png .tsc-toast.tsc-toast-summary { text-align: left; min-width: 320px; }
