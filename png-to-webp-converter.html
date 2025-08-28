@@ -3,19 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PNG to WebP Converter</title>
+  <link rel="stylesheet" href="png-to-webp-converter.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-RHxJz2kJwX8/7tY0K5m13Q2m8y/8b1gL3J7GScxp7D4jFr4nVgCahXEtT73sZ2bJ0C7Qy7Xr6PUUQbTRc7W9mw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="webp-to-png-converter.js" defer></script>
+  <script src="png-to-webp-converter.js" defer></script>
+  <style>html{background:#fff}</style>
 </head>
 <body>
-  <section class="tsc-webp2png" data-tool="webp-to-png">
+  <section class="tsc-png2webp" data-tool="png-to-webp">
     <div class="tsc-container">
       <header class="tsc-header">
-        <h2 class="tsc-title">WebP to PNG Converter – Free & Unlimited</h2>
-        <p class="tsc-subtitle">Convert WebP images to PNG instantly, without limits. Upload unlimited files, get high-quality PNGs, and download them individually or all at once — 100% free and browser-based.</p>
+        <h2 class="tsc-title">PNG to WebP Converter – Free & Unlimited</h2>
+        <p class="tsc-subtitle">Convert PNG images to WebP instantly, without limits. Upload unlimited files, get high‑quality WebPs, and download them individually or all at once — 100% free and browser‑based.</p>
       </header>
 
       <div class="tsc-card tsc-upload" id="uploadCard">
-        <div class="tsc-dropzone" id="webpDropzone" aria-label="Upload WebP images">
+        <div class="tsc-dropzone" id="pngDropzone" aria-label="Upload PNG images">
           <div class="tsc-dropzone-inner">
             <div class="tsc-drop-icon" aria-hidden="true">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,10 +26,10 @@
                 <path d="M20 16.5a3.5 3.5 0 00-3.5-3.5h-9A3.5 3.5 0 004 16.5v0A3.5 3.5 0 007.5 20h9A3.5 3.5 0 0020 16.5v0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <p class="tsc-drop-text"><strong>Drag & drop</strong> WebP images here</p>
+            <p class="tsc-drop-text"><strong>Drag & drop</strong> PNG images here</p>
             <p class="tsc-drop-or">or</p>
-            <button type="button" class="tsc-btn tsc-btn-primary" id="selectFilesBtn">Select Files</button>
-            <input type="file" id="webpFileInput" accept="image/webp,.webp" multiple hidden />
+            <button type="button" class="tsc-btn tsc-btn-primary" id="selectPngBtn">Select Files</button>
+            <input type="file" id="pngFileInput" accept="image/png,.png" multiple hidden />
           </div>
         </div>
         <div class="tsc-loading-overlay" id="uploadLoading" hidden>
@@ -59,13 +62,13 @@
 
       <div class="tsc-panel tsc-collapsible is-collapsed" id="resultsPanel">
         <div class="tsc-panel-head">
-          <h3 class="tsc-panel-title">Converted PNGs</h3>
+          <h3 class="tsc-panel-title">Converted WebPs</h3>
           <div class="tsc-result-actions">
             <button type="button" class="tsc-btn tsc-btn-secondary" id="downloadZipBtn" disabled>Download All</button>
-            <button type="button" class="tsc-btn tsc-btn-danger" id="clearAllBtn" disabled>Clear</button>
+            <button type="button" class="tsc-btn tsc-btn-danger" id="clearAllBtn" disabled>Clear All</button>
           </div>
         </div>
-        <div class="tsc-panel-note">Note: PNG is a lossless format and often larger than WebP. Sizes may differ while dimensions are preserved.</div>
+        <div class="tsc-panel-note">Note: WebP can be significantly smaller than PNG with similar visual quality. Lossless WebP is supported by most modern browsers.</div>
         <div class="tsc-grid tsc-results" id="resultsGrid"></div>
       </div>
 
@@ -83,8 +86,6 @@
           </div>
         </div>
       </div>
-
-      
 
       <div class="tsc-toasts" id="tscToasts" aria-live="polite" aria-atomic="true"></div>
     </div>
